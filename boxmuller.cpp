@@ -10,41 +10,37 @@
 
 #include <math.h>
 
-
 // extern float ranf();         /* ranf() is uniform in 0..1 */
-double ranf(double m) 
+float ranf(float m)
 {
- return (m*rand()/(double)RAND_MAX);
+	return (m * rand() / (float)RAND_MAX);
 }
 
-
-float box_muller(float m, float s)	/* normal random variate generator */
-{				        /* mean m, standard deviation s */
+float box_muller(float m, float s) /* normal random variate generator */
+{								   /* mean m, standard deviation s */
 	float x1, x2, w, y1;
 	static float y2;
 	static int use_last = 0;
 
-	if (use_last)		        /* use value from previous call */
+	if (use_last) /* use value from previous call */
 	{
 		y1 = y2;
 		use_last = 0;
 	}
 	else
 	{
-		do {
+		do
+		{
 			x1 = 2.0 * ranf(1.0) - 1.0;
 			x2 = 2.0 * ranf(1.0) - 1.0;
 			w = x1 * x1 + x2 * x2;
-		} while ( w >= 1.0 );
+		} while (w >= 1.0);
 
-		w = sqrt( (-2.0 * log( w ) ) / w );
+		w = sqrt((-2.0 * log(w)) / w);
 		y1 = x1 * w;
 		y2 = x2 * w;
 		use_last = 1;
 	}
 
-	return( m + y1 * s );
+	return (m + y1 * s);
 }
-
-
-
