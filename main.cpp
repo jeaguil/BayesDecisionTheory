@@ -1,32 +1,35 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
-#include <cmath>
-#include <algorithm>
+
+#include <Fastor/Fastor.h>
+using namespace Fastor;
 
 extern float box_muller(float, float);
-extern float covariance_case_1(float, float, std::vector<float>, float, float);
+extern float covariance_case_1(float, float, Tensor<float, 2, 1>, float, float);
+extern float bhattacharyya_bound(float, Tensor<float, 2, 2>, Tensor<float, 2, 2>, Tensor<float, 2, 1>, Tensor<float, 2, 1>);
+extern float probability_of_error(float, float);
 
 int main()
 {
-    std::vector<float> mean_1 = {1.0, 1.0};
-    std::vector<float> mean_2 = {4.0, 4.0};
+    Tensor<float, 2, 1> mean_1 = {{1.0}, {1.0}};
+    Tensor<float, 2, 1> mean_2 = {{4.0}, {4.0}};
 
     // Data set A has equal covariance matrices
-    std::vector<std::vector<float>> covariance_matrix_A{{1.0, 0.0}, {0.0, 1.0}};
+    Tensor<float, 2, 2> covariance_matrix_A = {{1.0, 0.0}, {0.0, 1.0}};
 
     // Data set A has the same variance for each value of x and y for each normal distribution
     float variance = 1.0;
 
     // Standard deviation for box muller transformation
     // Same for each x and y value of both normal distributions
-    float standard_deviation = sqrt(covariance_matrix_A[0][0]);
+    float standard_deviation = sqrt(covariance_matrix_A(0, 0));
 
     std::ofstream out;
     std::ofstream out2;
 
     out.open("DataSetA_1.csv");
     out2.open("DataSetA_2.csv");
+
     // Prior probability. No evidence for a randomly generated value belonging to a particular class
     // Treating a random sample with equal proability for both classes
     float probability = 0.50;
@@ -39,10 +42,10 @@ int main()
     for (int i = 0; i < 60000; i++)
     {
         // x gaussian samples with x's mean and x's standard deviation
-        x1 = box_muller(mean_1[0], standard_deviation);
+        x1 = box_muller(mean_1(0, 0), standard_deviation);
 
         // y gaussian samples with y's mean and y's standard deviation
-        y1 = box_muller(mean_1[1], standard_deviation);
+        y1 = box_muller(mean_1(0, 0), standard_deviation);
 
         // Outputing random samples to a file for a visualization plot
         out << x1 << "," << y1 << '\n';
@@ -74,8 +77,8 @@ int main()
     // Generating 140,000 random samples for the second normal distribution
     for (int i = 0; i < 140000; i++)
     {
-        x2 = box_muller(mean_2[0], standard_deviation);
-        y2 = box_muller(mean_2[1], standard_deviation);
+        x2 = box_muller(mean_2(0, 0), standard_deviation);
+        y2 = box_muller(mean_2(0, 0), standard_deviation);
         out2 << x2 << "," << y2 << '\n';
 
         discriminant_1 = covariance_case_1(x2, y2, mean_1, variance, probability);
@@ -102,5 +105,13 @@ int main()
     out.close();
     out2.close();
 
+    /* Calculation the theoretical probability error (e.g., Bhattacharyya bound) */
+    float beta = 0.50;
+    float kb = bhattacharyya_bound(beta, covariance_matrix_A, covariance_matrix_A, mean_1, mean_2);
+    float error = probability_of_error(kb, probability);
+
+    std::cout << "The probability of error <= " << error << std::endl;
+
+    std::cout << '\n';
     return 0;
 }

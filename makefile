@@ -1,7 +1,7 @@
+SOURCEDIR = $(shell pwd)
 CXX=g++
-CXXFLAGS=-std=c++14
+CXXFLAGS=-std=c++14 -I $(SOURCEDIR)
 project=classification
-OBJDIR=obj
 
 srcfiles=$(shell find -name "*.cpp")
 objects=$(subst .cpp,.o,$(srcfiles))
@@ -13,6 +13,9 @@ $(project): $(objects)
 
 clean:
 	rm -f $(objects)
+
+subdir_out:
+	$(subdir)
 
 dist-clean: clean
 	rm -f $(project)
