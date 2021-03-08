@@ -105,7 +105,7 @@ int main()
     out.close();
     out2.close();
 
-    /* Calculation the theoretical probability error (e.g., Bhattacharyya bound) */
+    /* Calculation for the theoretical probability error (e.g., Bhattacharyya bound) */
     float beta = 0.50;
     float kb = bhattacharyya_bound(beta, covariance_matrix_A, covariance_matrix_A, mean_1, mean_2);
     float error = probability_of_error(kb, probability);

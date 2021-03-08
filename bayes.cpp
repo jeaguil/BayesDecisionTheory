@@ -55,7 +55,8 @@ float bhattacharyya_bound(float beta, Tensor<float, 2, 2> cova_1, Tensor<float, 
   Using bhattacharyya bound on the error, determine the frequency at which the test will lead to an error
   
   @param kb: Special case of Chernoff bound where beta = 0.5. bhattacharyya_bound calculation kb 
-  @param probability: In the case of two categories, both classes have equal probability*/
+  @param probability: In the case of two categories, both classes have equal probability
+  @return error probability*/
 float probability_of_error(float kb, float probability)
 {
     return sqrt(probability * probability) * exp(-kb);
