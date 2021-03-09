@@ -2,6 +2,22 @@
 using namespace Fastor;
 
 /* 
+ An alternate to the linear discrimnant functions. 
+ When the probabilities are equal and the amount of features increases rapidly then the discrimant becomes an euclidean distance.
+ Is this an optimum classifier for each data sets compared to a linear discriminant?
+
+ @param random generated sameple <x,y>
+ @param mean of normal distribution <x,y>
+ @return distance between a pair of samples in n-dimensional feature space*/
+float euclidean_distance_classifier(float x, float y, Tensor<float, 2, 1> mean)
+{
+    Tensor<float, 2, 1> samples = {{x}, {y}};
+
+    Tensor<float, 1, 1> euclidean = matmul(transpose(samples - mean), (samples - mean));
+    return -euclidean(0, 0);
+}
+
+/* 
  Discriminant calculation for a covariance matrix belonging to case 1.
  Covariance matrix is diagonal where the variance is multiplied with the identity matrix.
  Equal variance among each class
@@ -19,7 +35,13 @@ float covariance_case_1(float x, float y, Tensor<float, 2, 1> mean, float varian
 
     Tensor<float, 1, 1> witx = matmul(transpose((1 / variance) * mean), samples);
     Tensor<float, 1, 1> mean_mult = matmul(transpose(mean), mean);
-    double wi0 = (-1 / (2 * variance)) * mean_mult(0, 0) + log(probability);
+    double wi0 = (-1 / (2 * variance)) * mean_mult(0, 0);
+
+    // If the two categories do not have equal probability, add the probability to the discriminant
+    if (probability != 0.50)
+    {
+        wi0 += log(probability);
+    }
 
     return (witx(0, 0) + wi0);
 }
@@ -55,8 +77,7 @@ float bhattacharyya_bound(float beta, Tensor<float, 2, 2> cova_1, Tensor<float, 
   Using bhattacharyya bound on the error, determine the frequency at which the test will lead to an error
   
   @param kb: Special case of Chernoff bound where beta = 0.5. bhattacharyya_bound calculation kb 
-  @param probability: In the case of two categories, both classes have equal probability
-  @return error probability*/
+  @param probability: In the case of two categories, both classes have equal probability*/
 float probability_of_error(float kb, float probability)
 {
     return sqrt(probability * probability) * exp(-kb);

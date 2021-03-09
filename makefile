@@ -9,7 +9,7 @@ else
 endif
 CXX=g++
 CXXFLAGS=-std=c++14 -I $(detected_OS)
-project=classification
+project=Bayes
 
 srcfiles=$(shell find -name "*.cpp")
 objects=$(subst .cpp,.o,$(srcfiles))

@@ -6,112 +6,237 @@ using namespace Fastor;
 
 extern float box_muller(float, float);
 extern float covariance_case_1(float, float, Tensor<float, 2, 1>, float, float);
+extern float euclidean_distance_classifier(float, float, Tensor<float, 2, 1>);
 extern float bhattacharyya_bound(float, Tensor<float, 2, 2>, Tensor<float, 2, 2>, Tensor<float, 2, 1>, Tensor<float, 2, 1>);
 extern float probability_of_error(float, float);
 
 int main()
 {
+    // Data set A and B have the same mean for both categories
     Tensor<float, 2, 1> mean_1 = {{1.0}, {1.0}};
     Tensor<float, 2, 1> mean_2 = {{4.0}, {4.0}};
 
     // Data set A has equal covariance matrices
-    Tensor<float, 2, 2> covariance_matrix_A = {{1.0, 0.0}, {0.0, 1.0}};
+    Tensor<float, 2, 2> setA_covariance_matrix = {{1.0, 0.0}, {0.0, 1.0}};
 
     // Data set A has the same variance for each value of x and y for each normal distribution
-    float variance = 1.0;
+    float setA_variance = 1.0;
+    /* Standard deviation for box muller transformation
+     Same for each x and y value of both normal distributions in data set A */
+    float setA_standard_deviation = sqrt(setA_covariance_matrix(0, 0));
 
-    // Standard deviation for box muller transformation
-    // Same for each x and y value of both normal distributions
-    float standard_deviation = sqrt(covariance_matrix_A(0, 0));
+    std::ofstream DataSetA_out1;
+    std::ofstream DataSetA_out2;
+    std::ofstream DataSetA_out3;
+    std::ofstream DataSetA_out4;
+    std::ofstream DataSetA_out5;
+    std::ofstream DataSetA_out6;
 
-    std::ofstream out;
-    std::ofstream out2;
+    // Output stream for generated data
+    DataSetA_out1.open("DataSetA_normal1_random.csv");
+    DataSetA_out2.open("DataSetA_normal2_random.csv");
+    DataSetA_out3.open("DataSetA_linear_discriminant_norm1.csv");
+    DataSetA_out4.open("DataSetA_linear_discriminant_norm2.csv");
+    DataSetA_out5.open("DataSetA_euclidean_norm1.csv");
+    DataSetA_out6.open("DataSetA_euclidean_norm2.csv");
 
-    out.open("DataSetA_1.csv");
-    out2.open("DataSetA_2.csv");
+    /* Prior probability. No evidence for a randomly generated value belonging to a particular class
+     Treating a random sample with equal proability for both classes within both normal distributions */
+    float probability_case_1 = 0.50,
+          probability_case_2 = 0.50;
 
-    // Prior probability. No evidence for a randomly generated value belonging to a particular class
-    // Treating a random sample with equal proability for both classes
-    float probability = 0.50;
     float x1, y1, x2, y2;
-    int norm1_classification_class_1 = 0, norm1_classification_class_2 = 0;
-    float discriminant_1 = 0.0, discriminant_2 = 0.0;
+    int setA_norm1_classify_class1 = 0, setA_norm1_classify_class2 = 0;
+    int setA_norm1_euclidean_class1 = 0, setA_norm1_euclidean_class2 = 0;
+    float setA_discriminant1 = 0.0, setA_discriminant2 = 0.0;
+    float setA_euclidean1 = 0.0, setA_euclidean2 = 0.0;
     float dichotomizer = 0;
 
     // Generating 60,000 random samples for the first normal distribution
     for (int i = 0; i < 60000; i++)
     {
         // x gaussian samples with x's mean and x's standard deviation
-        x1 = box_muller(mean_1(0, 0), standard_deviation);
+        x1 = box_muller(mean_1(0, 0), setA_standard_deviation);
 
         // y gaussian samples with y's mean and y's standard deviation
-        y1 = box_muller(mean_1(0, 0), standard_deviation);
+        y1 = box_muller(mean_1(0, 0), setA_standard_deviation);
 
         // Outputing random samples to a file for a visualization plot
-        out << x1 << "," << y1 << '\n';
+        DataSetA_out1 << x1 << "," << y1 << '\n';
 
-        discriminant_1 = covariance_case_1(x1, y1, mean_1, variance, probability);
-        discriminant_2 = covariance_case_1(x1, y1, mean_2, variance, probability);
+        setA_discriminant1 = covariance_case_1(x1, y1, mean_1, setA_variance, probability_case_1);
+        setA_discriminant2 = covariance_case_1(x1, y1, mean_2, setA_variance, probability_case_1);
+        // Outputing linear discriminants to file
+        DataSetA_out3 << setA_discriminant1 << "," << setA_discriminant2 << '\n';
 
-        // Case of two categories,
-        // Single discriminant function (dichotomizer) instead of two
-        dichotomizer = discriminant_1 - discriminant_2;
+        setA_euclidean1 = euclidean_distance_classifier(x1, y1, mean_1);
+        setA_euclidean2 = euclidean_distance_classifier(x1, y1, mean_2);
+        // Outputing euclidean discriminants to file
+        DataSetA_out5 << setA_euclidean1 << "," << setA_euclidean2 << '\n';
 
+        if (setA_euclidean1 > setA_euclidean2)
+        {
+            setA_norm1_euclidean_class1++;
+        }
+        else
+        {
+            setA_norm1_euclidean_class2++;
+        }
+
+        // Case of two categories, single discriminant function (dichotomizer) instead of two
+        dichotomizer = setA_discriminant1 - setA_discriminant2;
         if (dichotomizer > 0)
         {
             // Counting number of correctly classified random samples that belong in class one
-            norm1_classification_class_1++;
+            setA_norm1_classify_class1++;
         }
         else
         {
-            // Counting number of incorrectly classified random samples that actually belong to class two, but were classified to class one
-            norm1_classification_class_2++;
+            // Counting number of incorrectly classified random samples that actually belong to class 1, but were classified to class two
+            setA_norm1_classify_class2++;
         }
     }
-    float percent_missclassified_class1 = (norm1_classification_class_2 / 60000.0f) * 100.0f;
-    std::cout << '\n';
-    std::cout << "Total misclassified samples for class 1: " << norm1_classification_class_2 << "(" << percent_missclassified_class1 << "%)." << std::endl;
 
-    int norm2_classification_class_1 = 0, norm2_classification_class_2 = 0;
+    // Calculation of misclassification rate for data set A normal distribution 1 using a linear discriminant classifier
+    float percent_missclassified_linear_norm1 = (setA_norm1_classify_class2 / 60000.0f) * 100.0f;
+    std::cout << "\nData set A\n"
+              << "=====" << '\n';
+    std::cout << "Total misclassified samples for class 1 with linear discriminant: " << setA_norm1_classify_class2 << "(" << percent_missclassified_linear_norm1 << "%)." << std::endl;
+
+    // Calculation of misclassification rate for data set A normal distribution 1 using an euclidean classifier
+    float percent_missclassified_euclidean_norm1 = (setA_norm1_euclidean_class2 / 60000.0f) * 100.0f;
+    std::cout << "Total misclassified samples for class 1 with euclidean: " << setA_norm1_euclidean_class2 << "(" << percent_missclassified_euclidean_norm1 << "%)" << std::endl;
 
     // Generating 140,000 random samples for the second normal distribution
+    int setA_norm2_classify_class1 = 0, setA_norm2_classify_class2 = 0;
+    int setA_norm2_euclidean_class1 = 0, setA_norm2_euclidean_class2 = 0;
     for (int i = 0; i < 140000; i++)
     {
-        x2 = box_muller(mean_2(0, 0), standard_deviation);
-        y2 = box_muller(mean_2(0, 0), standard_deviation);
-        out2 << x2 << "," << y2 << '\n';
+        x2 = box_muller(mean_2(0, 0), setA_standard_deviation);
+        y2 = box_muller(mean_2(0, 0), setA_standard_deviation);
 
-        discriminant_1 = covariance_case_1(x2, y2, mean_1, variance, probability);
-        discriminant_2 = covariance_case_1(x2, y2, mean_2, variance, probability);
+        DataSetA_out2 << x2 << "," << y2 << '\n';
 
-        dichotomizer = discriminant_2 - discriminant_1;
+        setA_discriminant1 = covariance_case_1(x2, y2, mean_1, setA_variance, probability_case_1);
+        setA_discriminant2 = covariance_case_1(x2, y2, mean_2, setA_variance, probability_case_2);
+        DataSetA_out4 << setA_discriminant1 << "," << setA_discriminant2 << '\n';
 
-        if (dichotomizer > 0)
+        setA_euclidean1 = euclidean_distance_classifier(x2, y2, mean_1);
+        setA_euclidean2 = euclidean_distance_classifier(x2, y2, mean_2);
+        DataSetA_out6 << setA_euclidean1 << "," << setA_euclidean2 << '\n';
+
+        if (setA_euclidean2 > setA_euclidean1)
         {
-            norm2_classification_class_2++;
+            setA_norm2_euclidean_class2++;
         }
         else
         {
-            norm2_classification_class_1++;
+            setA_norm2_euclidean_class1++;
+        }
+
+        dichotomizer = setA_discriminant2 - setA_discriminant1;
+        if (dichotomizer > 0)
+        {
+            setA_norm2_classify_class2++;
+        }
+        else
+        {
+            setA_norm2_classify_class1++;
         }
     }
-    float percent_missclassified_class2 = (norm2_classification_class_1 / 140000.0) * 100.0f;
-    std::cout << "Total misclassified samples for class 2: " << norm2_classification_class_1 << "(" << percent_missclassified_class2 << "%)." << std::endl;
 
+    //Calculation of misclassification rate for data set A normal distribution 2 using a linear discriminant classifier
+    float percent_missclassified_norm2 = (setA_norm2_classify_class1 / 140000.0) * 100.0f;
+    std::cout << "\nTotal misclassified samples for class 2 with linear discriminant: " << setA_norm2_classify_class1 << "(" << percent_missclassified_norm2 << "%)." << std::endl;
+
+    //Calculationg of misclassification rate for data set A normal distribution 2 using a euclidean classifier
+    float percent_missclassified_euclidean_norm2 = (setA_norm2_euclidean_class1 / 140000.0f) * 100.0f;
+    std::cout << "Total misclassified samples for class 2 with euclidean: " << setA_norm2_euclidean_class1 << "(" << percent_missclassified_euclidean_norm2 << "%)" << std::endl;
+
+    // Calculation of total misclassification rate for data set A
     std::cout << '\n';
-    float total_misclassified = norm2_classification_class_1 + norm1_classification_class_2;
+    float total_misclassified = setA_norm2_classify_class1 + setA_norm1_classify_class2;
     float percent_total_misclassified = (total_misclassified / 200000.0) * 100.f;
     std::cout << "Total misclassification rate = " << percent_total_misclassified << "%" << std::endl;
-    out.close();
-    out2.close();
+    DataSetA_out1.close();
+    DataSetA_out2.close();
 
-    /* Calculation for the theoretical probability error (e.g., Bhattacharyya bound) */
+    // Calculation of the theoretical probability error (e.g., Bhattacharyya bound) for data set A
     float beta = 0.50;
-    float kb = bhattacharyya_bound(beta, covariance_matrix_A, covariance_matrix_A, mean_1, mean_2);
-    float error = probability_of_error(kb, probability);
-
-    std::cout << "The probability of error <= " << error << std::endl;
+    float kb = bhattacharyya_bound(beta, setA_covariance_matrix, setA_covariance_matrix, mean_1, mean_2);
+    float setA_error = probability_of_error(kb, probability_case_1);
+    float prob_error_dataSetA = setA_error * 100.0f;
+    std::cout << "The probability of error <= " << setA_error << "(" << prob_error_dataSetA << "%)" << std::endl;
 
     std::cout << '\n';
+
+    /* Data set B configurations */
+    // std::ofstream DataSetB_out1;
+    // std::ofstream DataSetB_out2;
+
+    // DataSetB_out1.open("/data sets/DataSetB_normal1_random.csv");
+    // DataSetB_out2.open("/data sets/DataSetB_normal2_random.csv");
+
+    // Tensor<float, 2, 2> setB_covariance_matrix1 = {{1, 0},
+    //                                                {0, 1}};
+    // Tensor<float, 2, 2> setB_covariance_matrix2 = {{4, 0}, {0, 8}};
+
+    // float standard_deviation_setB_1 = sqrt(setB_covariance_matrix2(0, 0));
+    // float standard_deviation_setB_2 = sqrt(setB_covariance_matrix2(1, 1));
+
+    // float x3, y3, x4, y4;
+    // float setB_discriminant1 = 0.0, setB_discriminant2 = 0.0;
+
+    // int setB_norm1_classify_class1 = 0, setB_norm1_classify_class2 = 0;
+
+    // // Generating 40,000 random samples from the first normal distribution in data set B
+    // for (int i = 0; i < 40000; i++)
+    // {
+    //     x3 = box_muller(mean_1(0, 0), standard_deviation_setB_1);
+    //     y3 = box_muller(mean_1(1, 0), standard_deviation_setB_1);
+
+    //     DataSetB_out1 << x3 << "," << y3 << '\n';
+
+    //     setB_discriminant1 = covariance_case_3(x3, y3, mean_1, setB_covariance_matrix1, probability_case_1);
+    //     setB_discriminant2 = covariance_case_3(x3, y3, mean_2, setB_covariance_matrix2, probability_case_2);
+
+    //     dichotomizer = setB_discriminant1 - setB_discriminant2;
+    //     if (dichotomizer > 0)
+    //     {
+    //         setB_norm1_classify_class1++;
+    //     }
+    //     else
+    //     {
+    //         setB_norm1_classify_class2++;
+    //     }
+    // }
+    // std::cout << setB_norm1_classify_class1 << std::endl;
+    // std::cout << setB_norm1_classify_class2 << std::endl;
+
+    // // Generating 160,000 random samples from the first second distribution in data set B
+    // int setB_norm2_classify_class1 = 0, setB_norm2_classify_class2 = 0;
+    // for (int i = 0; i < 160000; i++)
+    // {
+    //     x4 = box_muller(mean_2(0, 0), standard_deviation_setB_1);
+    //     y4 = box_muller(mean_2(1, 0), standard_deviation_setB_2);
+
+    //     DataSetB_out2 << x3 << "," << y3 << '\n';
+
+    //     setB_discriminant1 = covariance_case_3(x3, y3, mean_1, setB_covariance_matrix1, probability_case_2);
+    //     setB_discriminant2 = covariance_case_3(x3, y3, mean_2, setB_covariance_matrix2, probability_case_2);
+
+    //     dichotomizer = setB_discriminant2 - setB_discriminant1;
+    //     if (dichotomizer > 0)
+    //     {
+    //         setB_norm2_classify_class2++;
+    //     }
+    //     else
+    //     {
+    //         setB_norm2_classify_class1++;
+    //     }
+    // }
+
+    // std::cout << setB_norm2_classify_class1 << std::endl;
+    // std::cout << setB_norm2_classify_class2 << std::endl;
     return 0;
 }
