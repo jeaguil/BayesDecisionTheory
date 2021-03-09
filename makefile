@@ -3,11 +3,12 @@ SOURCEDIR=$(shell pwd)
 CYGPATH=$(shell cygpath -w $(SOURCEDIR))
 
 ifeq ($(UNAME), Linux)
-	CXXFLAGS=-std=c++14 -I $(SOURCEDIR)
+	detected_OS=$(SOURCEDIR)
 else
-	CXXFLAGS=-std=c++14 -I $(CYGPATH)
+	detected_OS=$(CYGPATH)
 endif
 CXX=g++
+CXXFLAGS=-std=c++14 -I $(detected_OS)
 project=classification
 
 srcfiles=$(shell find -name "*.cpp")
