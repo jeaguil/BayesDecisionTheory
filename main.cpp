@@ -249,7 +249,7 @@ int main()
     std::cout << "\nData set B\n"
               << "=====" << '\n';
     std::cout << "Total misclassified samples for class 1 with quadratic discriminant: " << setB_norm1_classify_class2 << "(" << setB_percent_missclassified_class1 << "%)." << std::endl;
-    float setB_percent_missclassified_euclidean_norm1 = (setB_norm1_euclidean_class2 / 60000.0f) * 100.0f;
+    float setB_percent_missclassified_euclidean_norm1 = (setB_norm1_euclidean_class2 / 40000.0f) * 100.0f;
     std::cout << "Total misclassified samples for class 1 with euclidean: " << setB_norm1_euclidean_class2 << "(" << setB_percent_missclassified_euclidean_norm1 << "%) \n"
               << std::endl;
 
@@ -296,7 +296,7 @@ int main()
     }
     float setB_percent_missclassified_class2 = (setB_norm2_classify_class1 / 160000.0) * 100.0f;
     std::cout << "Total misclassified samples for class 2 with quadratic discriminant: " << setB_norm2_classify_class1 << "(" << setB_percent_missclassified_class2 << "%)." << std::endl;
-    percent_missclassified_euclidean_norm2 = (setB_norm2_euclidean_class1 / 140000.0f) * 100.0f;
+    percent_missclassified_euclidean_norm2 = (setB_norm2_euclidean_class1 / 160000.0f) * 100.0f;
     std::cout << "Total misclassified samples for class 2 with euclidean: " << setB_norm2_euclidean_class1 << "(" << percent_missclassified_euclidean_norm2 << "%)" << std::endl;
     std::cout << '\n';
 
