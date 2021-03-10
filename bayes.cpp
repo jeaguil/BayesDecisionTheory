@@ -67,7 +67,7 @@ float covariance_case_3(float x, float y, Tensor<float, 2, 1> mean, Tensor<float
     Tensor<float, 1, 1> wi0_2 = -0.5 * log(determinant(covariance_matrix)) + log(probability);
     Tensor<float, 1, 1> xtWix = matmul(matmul(transpose(samples), Wi), samples);
     Tensor<float, 1, 1> witx = matmul(transpose(w_i), samples);
-    Tensor<float, 1, 1> discriminant_value = xtWix + witx + (wi0_1(0, 0) + wi0_2(0, 0));
+    Tensor<float, 1, 1> discriminant_value = xtWix + witx + wi0_1 + wi0_2;
 
     return discriminant_value(0, 0);
 }
