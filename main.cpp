@@ -210,8 +210,8 @@ int main()
     // Generating 40,000 random samples from the first normal distribution in data set B
     for (int i = 0; i < 40000; i++)
     {
-        x3 = box_muller(mean_1(0, 0), standard_deviation_setB_1);
-        y3 = box_muller(mean_1(1, 0), standard_deviation_setB_2);
+        x3 = box_muller(mean_1(0, 0), setA_standard_deviation);
+        y3 = box_muller(mean_1(1, 0), setA_standard_deviation);
 
         DataSetB_out1 << x3 << "," << y3 << '\n';
 
@@ -248,9 +248,9 @@ int main()
     float setB_percent_missclassified_class1 = (setB_norm1_classify_class2 / 40000.0f) * 100.0f;
     std::cout << "\nData set B\n"
               << "=====" << '\n';
-    std::cout << "Total misclassified samples for class 1 SetB: " << setB_norm1_classify_class2 << "(" << setB_percent_missclassified_class1 << "%)." << std::endl;
+    std::cout << "Total misclassified samples for class 1 with quadratic discriminant: " << setB_norm1_classify_class2 << "(" << setB_percent_missclassified_class1 << "%)." << std::endl;
     float setB_percent_missclassified_euclidean_norm1 = (setB_norm1_euclidean_class2 / 60000.0f) * 100.0f;
-    std::cout << "Total misclassified samples for class 1 SetB with euclidean: " << setB_norm1_euclidean_class2 << "(" << setB_percent_missclassified_euclidean_norm1 << "%) \n"
+    std::cout << "Total misclassified samples for class 1 with euclidean: " << setB_norm1_euclidean_class2 << "(" << setB_percent_missclassified_euclidean_norm1 << "%) \n"
               << std::endl;
 
     int setB_norm2_classification_class_1 = 0;
@@ -260,6 +260,7 @@ int main()
     int setB_norm2_classify_class1 = 0, setB_norm2_classify_class2 = 0;
     for (int i = 0; i < 160000; i++)
     {
+        // Set B normal distribution one uses the same standard deviation from data set A
         x4 = box_muller(mean_2(0, 0), standard_deviation_setB_1);
         y4 = box_muller(mean_2(1, 0), standard_deviation_setB_2);
         DataSetB_out2 << x4 << "," << y4 << '\n';
@@ -294,20 +295,20 @@ int main()
         }
     }
     float setB_percent_missclassified_class2 = (setB_norm2_classify_class1 / 160000.0) * 100.0f;
-    std::cout << "Total misclassified samples for class 2 setB: " << setB_norm2_classify_class1 << "(" << setB_percent_missclassified_class2 << "%)." << std::endl;
+    std::cout << "Total misclassified samples for class 2 with quadratic discriminant: " << setB_norm2_classify_class1 << "(" << setB_percent_missclassified_class2 << "%)." << std::endl;
     percent_missclassified_euclidean_norm2 = (setB_norm2_euclidean_class1 / 140000.0f) * 100.0f;
-    std::cout << "Total misclassified samples for class 2 setB with euclidean: " << setB_norm2_euclidean_class1 << "(" << percent_missclassified_euclidean_norm2 << "%)" << std::endl;
+    std::cout << "Total misclassified samples for class 2 with euclidean: " << setB_norm2_euclidean_class1 << "(" << percent_missclassified_euclidean_norm2 << "%)" << std::endl;
     std::cout << '\n';
 
     // Set B total misclassification rate with linear discriminant
     float setB_total_misclassified = setB_norm1_classify_class2 + setB_norm2_classify_class1;
     float setB_percent_total_misclassified = (setB_total_misclassified / 200000.0) * 100.0f;
-    std::cout << "Total misclassification rate setB with linear discriminant = " << setB_percent_total_misclassified << "%" << std::endl;
+    std::cout << "Total misclassification rate with quadratic discriminant = " << setB_percent_total_misclassified << "%" << std::endl;
 
     // Set B total misclassification rate with euclidean discrminant
     float setB_euclidean_misclassifed = setB_norm1_classify_class1 + setB_norm2_classify_class1;
     float setB_euclidean_total_misclassified = (setB_euclidean_misclassifed / 200000.0) * 100.0f;
-    std::cout << "Total misclassification rate for set B using euclidean distance classifier = " << setB_euclidean_misclassifed << "(" << setB_euclidean_total_misclassified << "%)" << std::endl;
+    std::cout << "Total misclassification rate with euclidean distance classifier = " << setB_euclidean_misclassifed << "(" << setB_euclidean_total_misclassified << "%)" << std::endl;
 
     /* Calculation for the theoretical probability error (e.g., Bhattacharyya bound) for data set B */
     float setB_kb = bhattacharyya_bound(beta, setB_covariance_matrix1, setB_covariance_matrix2, mean_1, mean_2);
