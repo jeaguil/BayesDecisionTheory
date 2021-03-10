@@ -60,15 +60,15 @@ float covariance_case_1(float x, float y, Tensor<float, 2, 1> mean, float varian
  */
 float covariance_case_3(float x, float y, Tensor<float, 2, 1> mean, Tensor<float, 2, 2> covariance_matrix, float probability)
 {
-    Tensor<float, 2, 1> samples = { {x}, {y} };
+    Tensor<float, 2, 1> samples = {{x}, {y}};
     Tensor<float, 1, 1> witx = matmul(transpose(matmul(inverse(covariance_matrix), mean)), samples);
-    Tensor<float, 2, 2> Wi = -0.5*inverse(covariance_matrix);
-    Tensor<float, 1, 1> xtWix = matmul(matmul(transpose(samples),Wi),samples);
+    Tensor<float, 2, 2> Wi = -0.5 * inverse(covariance_matrix);
+    Tensor<float, 1, 1> xtWix = matmul(matmul(transpose(samples), Wi), samples);
     Tensor<float, 1, 1> tempw = matmul(-0.5 * transpose(mean), matmul(inverse(covariance_matrix), mean));
-    double wi0 = tempw(0, 0) + 0.5*log(determinant(covariance_matrix))+ log(probability);
-    return xtWix(0,0)+witx(0, 0) + wi0;
-
+    double wi0 = tempw(0, 0) + 0.5 * log(determinant(covariance_matrix)) + log(probability);
+    return xtWix(0, 0) + witx(0, 0) + wi0;
 }
+
 /* 
  Special case of Chernoff bound where beta = 0.5
  A computationally simpler, less tight bound can be derived by using the Bhattacharyya bound on the error
